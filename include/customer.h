@@ -3,8 +3,14 @@
 
 class customer{
     private:
+        int number;
 
     public:
+        customer(int);
+
+        //VARIABLE INTERACTIONS
+        int get_number();
+        void set_number(int);
 };
 
 #endif //CUSTOMER_H_INCLUDED

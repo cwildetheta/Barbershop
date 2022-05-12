@@ -1,2 +1,2 @@
 #include "manager.h"
-int main(){system("cls"); manager barbershop(4, 6, 5, 30); return 0;}
+int main(){system("cls"); manager barbershop(4, 12, 4, 30, 3); return 0;}
