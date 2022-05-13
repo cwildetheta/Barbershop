@@ -15,8 +15,8 @@ class manager{
         std::condition_variable gConditionVariable;
         std::vector<std::shared_ptr<barber>> barber_vector;
         std::vector<std::shared_ptr<std::thread>> barber_thread_vector;
-        std::queue<customer> customer_queue;
-        int queue_size, max_customer_interval, runtime, customers_so_far, barber_number, currently_cutting;
+        std::queue<std::unique_ptr<customer>> customer_queue;
+        int queue_size, max_customer_interval, runtime, customers_so_far, barber_number;
         bool customers_end;
 
     public:

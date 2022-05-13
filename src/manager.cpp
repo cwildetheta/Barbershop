@@ -10,10 +10,11 @@
 #include <vector>
 #include <memory>
 #include <unistd.h>
+#include <iomanip>
 
 manager::manager(int cut_time_input, int queue_input, int interval_input, int time_input, int barber_input)
 {
-    queue_size = queue_input, max_customer_interval = interval_input, runtime = time_input, customers_so_far = 0, barber_number = barber_input, currently_cutting = 0;
+    queue_size = queue_input, max_customer_interval = interval_input, runtime = time_input, customers_so_far = 0, barber_number = barber_input;
     customers_end = false;
 
     for(int i = 0; i < barber_number; i++){
@@ -34,39 +35,39 @@ manager::manager(int cut_time_input, int queue_input, int interval_input, int ti
 void manager::barbers(int index)
 {
     clock_t start = clock();
-    while((((clock() - start) / CLOCKS_PER_SEC) <= runtime) || ((customer_queue.size() - currently_cutting) > 0) || (customers_end == false)){
+    while((((clock() - start) / CLOCKS_PER_SEC) <= runtime) || (customer_queue.size() > 0) || (customers_end == false)){
         std::vector<std::shared_ptr<barber>>::iterator ib = barber_vector.begin();
         advance(ib, index);
         std::unique_lock<std::mutex> lock(gLock);
-        if((customer_queue.size() - currently_cutting) == 0){
+        if(customer_queue.size() == 0){
             (*ib)->set_is_asleep(true);
-            std::cout << "There is no one in the queue. The barber " << (index + 1) << " is going to sleep." << std::endl;
+            std::cout << "There is no one in the queue. Barber " << (index + 1) << " is going to sleep." << std::endl;
             gConditionVariable.wait(lock);
             ib = barber_vector.begin();
             advance(ib, index);
             (*ib)->set_is_asleep(false);
             if(customers_end == false){
-                std::cout << "The customer has woken up the barber " << (index + 1) << "." << std::endl;
+                std::cout << "The customer has woken up barber " << (index + 1) << "." << std::endl;
             }
         }
         else{
-            currently_cutting++;
-            std::cout << "The barber " << (index + 1) << " is cutting a person's hair." << std::endl;
+            (*ib)->current_customer = std::move(customer_queue.front());
+            std::cout << "Barber " << (index + 1) << " is cutting the hair of customer " << (*ib)->current_customer->get_number() << "." << "                ";
+            customer_queue.pop();
+            if(customer_queue.size() == 1){
+                std::cout << " There is now " << customer_queue.size() << " person in the queue." << std::endl;
+            }
+            else{
+                std::cout << " There are now " << customer_queue.size() << " people in the queue." << std::endl;
+            }
             lock.unlock();
             std::this_thread::sleep_for(std::chrono::seconds(4));
             lock.lock();
-            std::cout << "The customer " << customer_queue.front().get_number() << "'s hair has been cut.";
-            customer_queue.pop();
-            currently_cutting--;
-            if((customer_queue.size() - currently_cutting) == 1){
-                std::cout << " There is now " << (customer_queue.size() - currently_cutting) << " person in the queue." << std::endl;
-            }
-            else{
-                std::cout << " There are now " << (customer_queue.size() - currently_cutting) << " people in the queue." << std::endl;
-            }
+            std::cout << "Customer " << (*ib)->current_customer->get_number() << "'s hair has been cut." << std::endl;
+            (*ib)->current_customer = nullptr;
         }
     }
-    std::cout << "There are no more customers, so the barber " << (index + 1) << " is finished working for the day." << std::endl;
+    std::cout << "There are no more customers, so barber " << (index + 1) << " is finished working for the day." << std::endl;
 }
 void manager::customers()
 {
@@ -88,15 +89,15 @@ void manager::customers()
                     ++iw;
                 }
             }
-            if((customer_queue.size() - currently_cutting) < queue_size){
+            if(customer_queue.size() < queue_size){
                 customers_so_far++;
-                customer_queue.push(customer(customers_so_far));
-                std::cout << "A new customer has joined the queue. They are customer " << customer_queue.back().get_number() << ". ";
+                customer_queue.push(std::make_unique<customer>(customers_so_far));
+                std::cout << "A new customer has joined the queue. They are customer " << customer_queue.back()->get_number() << ".  ";
                 if(customer_queue.size() == 1){
-                    std::cout << " There is now " << (customer_queue.size() - currently_cutting) << " person in the queue." << std::endl;
+                    std::cout << " There is now " << customer_queue.size() << " person in the queue." << std::endl;
                 }
                 else{
-                    std::cout << " There are now " << (customer_queue.size() - currently_cutting) << " people in the queue." << std::endl;
+                    std::cout << " There are now " << customer_queue.size() << " people in the queue." << std::endl;
                 }
             }
             else{

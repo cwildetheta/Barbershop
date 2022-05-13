@@ -4,6 +4,7 @@ barber::barber(int int_input)
 {
     cut_time = int_input;
     is_asleep = true;
+    current_customer = nullptr;
 }
 
 //VARIABLE INTERACTIONS//
