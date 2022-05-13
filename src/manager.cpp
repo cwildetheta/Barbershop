@@ -19,7 +19,7 @@ manager::manager(int cut_time_input, int queue_input, int interval_input, int ti
     for(int i = 0; i < barber_number; i++){
         barber_vector.push_back(std::make_shared<barber>(cut_time_input));
         barber_thread_vector.push_back(std::make_shared<std::thread>(&manager::barbers, this, i));
-        usleep(100000);
+        usleep(1000);
     }
     std::thread customerThread(&manager::customers, this);
 
@@ -40,23 +40,21 @@ void manager::barbers(int index)
         std::unique_lock<std::mutex> lock(gLock);
         if((customer_queue.size() - currently_cutting) == 0){
             (*ib)->set_is_asleep(true);
-            std::cout << "There is no one in the queue. The barber " << index << " is going to sleep." << std::endl;
+            std::cout << "There is no one in the queue. The barber " << (index + 1) << " is going to sleep." << std::endl;
             gConditionVariable.wait(lock);
-            std::vector<std::shared_ptr<barber>>::iterator ib = barber_vector.begin();
+            ib = barber_vector.begin();
             advance(ib, index);
             (*ib)->set_is_asleep(false);
             if(customers_end == false){
-                std::cout << "The customer has woken up the barber " << index << "." << std::endl;
+                std::cout << "The customer has woken up the barber " << (index + 1) << "." << std::endl;
             }
         }
-        //std::cout << "The customer queue size is: " << customer_queue.size() << std::endl;
-        //if((customer_queue.size() - currently_cutting) != 0){
         else{
             currently_cutting++;
-            std::cout << "The barber " << index << " is cutting a person's hair." << std::endl;
+            std::cout << "The barber " << (index + 1) << " is cutting a person's hair." << std::endl;
             lock.unlock();
             std::this_thread::sleep_for(std::chrono::seconds(4));
-            std::unique_lock<std::mutex> lock(gLock);
+            lock.lock();
             std::cout << "The customer " << customer_queue.front().get_number() << "'s hair has been cut.";
             customer_queue.pop();
             currently_cutting--;
@@ -68,7 +66,7 @@ void manager::barbers(int index)
             }
         }
     }
-    std::cout << "There are no more customers, so the barber " << index << " is finished working for the day." << std::endl;
+    std::cout << "There are no more customers, so the barber " << (index + 1) << " is finished working for the day." << std::endl;
 }
 void manager::customers()
 {
@@ -115,6 +113,6 @@ void manager::customers()
         if((*iw)->get_is_asleep() == true){
             gConditionVariable.notify_one();
         }
-        advance(iw, 1);
+        ++iw;
     }
 }
