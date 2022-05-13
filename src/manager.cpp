@@ -55,7 +55,7 @@ void manager::barbers(int index)
             lock.unlock();
             std::this_thread::sleep_for(std::chrono::seconds(4));
             lock.lock();
-            std::cout << "The customer " << customer_queue.front().get_number() << "'s hair has been cut.";
+            std::cout << "The customer " << customer_queue.front().get_number() << "'s hair has been cut." << "                            ";
             customer_queue.pop();
             currently_cutting--;
             if((customer_queue.size() - currently_cutting) == 1){
@@ -91,7 +91,7 @@ void manager::customers()
             if((customer_queue.size() - currently_cutting) < queue_size){
                 customers_so_far++;
                 customer_queue.push(customer(customers_so_far));
-                std::cout << "A new customer has joined the queue. They are customer " << customer_queue.back().get_number() << ". ";
+                std::cout << "A new customer has joined the queue. They are customer " << customer_queue.back().get_number() << ".      ";
                 if(customer_queue.size() == 1){
                     std::cout << " There is now " << (customer_queue.size() - currently_cutting) << " person in the queue." << std::endl;
                 }
