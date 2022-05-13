@@ -21,6 +21,7 @@ class manager{
 
     public:
         manager(int, int, int, int, int);
+        void gui();
         void barbers(int);
         void customers();
 

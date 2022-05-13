@@ -6,10 +6,10 @@ class customer{
         int number;
 
     public:
-        customer(int);
+        explicit customer(int);
 
         //VARIABLE INTERACTIONS
-        int get_number();
+        int get_number() const;
         void set_number(int);
 };
 

@@ -32,6 +32,67 @@ manager::manager(int cut_time_input, int queue_input, int interval_input, int ti
     }
 }
 
+void manager::gui()
+{
+    system("cls");
+    for(int i = 0; i < queue_size; i++){
+        std::cout << " " << char(218) << char(196) << char(196) << char(196) << char(191) << " ";
+    }
+    std::cout << std::endl;
+    for(int i = 0; i < queue_size; i++){
+        std::cout << " " << char(179);
+        if(i < customer_queue.size()){
+            if((customer_queue.front()->get_number()+i) < 10){
+                std::cout << " " << (customer_queue.front()->get_number() + i) << " ";
+            }
+            else if((customer_queue.front()->get_number()+i) < 100){
+                std::cout << " " << (customer_queue.front()->get_number() + i);
+            }
+            else{
+                std::cout << (customer_queue.front()->get_number() + i);
+            }
+        }
+        else{
+            std::cout << "   ";
+        }
+        std::cout << char(179) << " ";
+    }
+    std::cout << std::endl;
+    for(int i = 0; i < queue_size; i++){
+        std::cout << " " << char(192) << char(196) << char(196) << char(196) << char(217) << " ";
+    }
+    std::cout << std::endl << std::endl;
+    for(int i = 0; i < barber_number; i++){
+        std::cout << " " << char(218) << char(196) << char(196) << char(196) << char(191) << " ";
+    }
+    std::cout << std::endl;
+    std::vector<std::shared_ptr<barber>>::iterator ib = barber_vector.begin();
+    for(int i = 0; i < barber_number; i++){
+        std::cout << " " << char(179);
+        if((*ib)->current_customer != nullptr){
+            if((*ib)->current_customer->get_number() < 10){
+                std::cout << " " << (*ib)->current_customer->get_number() << " ";
+            }
+            else if((*ib)->current_customer->get_number() < 100){
+                std::cout << " " << (*ib)->current_customer->get_number();
+            }
+            else{
+                std::cout << (*ib)->current_customer->get_number();
+            }
+        }
+        else{
+            std::cout << "   ";
+        }
+        std::cout << char(179) << " ";
+        ++ib;
+    }
+    std::cout << std::endl;
+    for(int i = 0; i < barber_number; i++){
+        std::cout << " " << char(192) << char(196) << char(196) << char(196) << char(217) << " ";
+    }
+    usleep(50000);
+}
+
 void manager::barbers(int index)
 {
     clock_t start = clock();
@@ -41,33 +102,35 @@ void manager::barbers(int index)
         std::unique_lock<std::mutex> lock(gLock);
         if(customer_queue.size() == 0){
             (*ib)->set_is_asleep(true);
-            std::cout << "There is no one in the queue. Barber " << (index + 1) << " is going to sleep." << std::endl;
+            //std::cout << "There is no one in the queue. Barber " << (index + 1) << " is going to sleep." << std::endl;
             gConditionVariable.wait(lock);
             ib = barber_vector.begin();
             advance(ib, index);
             (*ib)->set_is_asleep(false);
             if(customers_end == false){
-                std::cout << "The customer has woken up barber " << (index + 1) << "." << std::endl;
+                //std::cout << "The customer has woken up barber " << (index + 1) << "." << std::endl;
             }
         }
         else{
             (*ib)->current_customer = std::move(customer_queue.front());
-            std::cout << "Barber " << (index + 1) << " is cutting the hair of customer " << (*ib)->current_customer->get_number() << "." << "                ";
+            //std::cout << "Barber " << (index + 1) << " is cutting the hair of customer " << (*ib)->current_customer->get_number() << "." << "                ";
             customer_queue.pop();
             if(customer_queue.size() == 1){
-                std::cout << " There is now " << customer_queue.size() << " person in the queue." << std::endl;
+                //std::cout << " There is now " << customer_queue.size() << " person in the queue." << std::endl;
             }
             else{
-                std::cout << " There are now " << customer_queue.size() << " people in the queue." << std::endl;
+                //std::cout << " There are now " << customer_queue.size() << " people in the queue." << std::endl;
             }
+            gui();
             lock.unlock();
             std::this_thread::sleep_for(std::chrono::seconds(4));
             lock.lock();
-            std::cout << "Customer " << (*ib)->current_customer->get_number() << "'s hair has been cut." << std::endl;
+            //std::cout << "Customer " << (*ib)->current_customer->get_number() << "'s hair has been cut." << std::endl;
             (*ib)->current_customer = nullptr;
+            gui();
         }
     }
-    std::cout << "There are no more customers, so barber " << (index + 1) << " is finished working for the day." << std::endl;
+    //std::cout << "There are no more customers, so barber " << (index + 1) << " is finished working for the day." << std::endl;
 }
 void manager::customers()
 {
@@ -92,22 +155,23 @@ void manager::customers()
             if(customer_queue.size() < queue_size){
                 customers_so_far++;
                 customer_queue.push(std::make_unique<customer>(customers_so_far));
-                std::cout << "A new customer has joined the queue. They are customer " << customer_queue.back()->get_number() << ".  ";
+                //std::cout << "A new customer has joined the queue. They are customer " << customer_queue.back()->get_number() << ".  ";
                 if(customer_queue.size() == 1){
-                    std::cout << " There is now " << customer_queue.size() << " person in the queue." << std::endl;
+                    //std::cout << " There is now " << customer_queue.size() << " person in the queue." << std::endl;
                 }
                 else{
-                    std::cout << " There are now " << customer_queue.size() << " people in the queue." << std::endl;
+                    //std::cout << " There are now " << customer_queue.size() << " people in the queue." << std::endl;
                 }
             }
             else{
-                std::cout << "A new customer has entered, but the queue is full, so they left." << std::endl;
+                //std::cout << "A new customer has entered, but the queue is full, so they left." << std::endl;
             }
+            gui();
         }
         std::this_thread::sleep_for(std::chrono::seconds(rand()%max_customer_interval));
     }
     std::unique_lock<std::mutex> lock(gLock);
-    std::cout << "The day has ended, no more customers will arrive." << std::endl;
+    //std::cout << "The day has ended, no more customers will arrive." << std::endl;
     customers_end = true;
     std::vector<std::shared_ptr<barber>>::iterator iw = barber_vector.begin();
     for(int i = 0; i < barber_number; i++){
