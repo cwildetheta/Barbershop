@@ -7,12 +7,12 @@ class barber{
         int cut_time;
         bool is_asleep;
     public:
-        barber(int);
+        explicit barber(int);
 
         //VARIABLE INTERACTIONS//
-        int get_cut_time();
+        int get_cut_time() const;
         void set_cut_time(int);
-        bool get_is_asleep();
+        bool get_is_asleep() const;
         void set_is_asleep(bool);
 };
 

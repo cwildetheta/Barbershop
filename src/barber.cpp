@@ -7,7 +7,7 @@ barber::barber(int int_input)
 }
 
 //VARIABLE INTERACTIONS//
-int barber::get_cut_time()
+int barber::get_cut_time() const
 {
     return cut_time;
 }
@@ -15,7 +15,7 @@ void barber::set_cut_time(int int_input)
 {
     cut_time = int_input;
 }
-bool barber::get_is_asleep()
+bool barber::get_is_asleep() const
 {
     return is_asleep;
 }

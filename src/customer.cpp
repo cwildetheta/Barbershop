@@ -7,7 +7,7 @@ customer::customer(int int_input)
 }
 
 //VARIABLE INTERACTIONS
-int customer::get_number()
+int customer::get_number() const
 {
     return number;
 }
